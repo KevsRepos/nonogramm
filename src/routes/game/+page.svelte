@@ -1,4 +1,6 @@
 <script lang="ts">
+import { IconPointFilled, IconX } from "@tabler/icons-svelte";
+
 let btnAction: 1|0 = $state(1);
 
 interface Field {
@@ -21,7 +23,7 @@ const buildMatrix = (matrixShape: Array<1|0>): Array<Field> => {
 
 let matrix: Array<Field> = $state(buildMatrix(matrixShape));
 let fails = $state(0);
-let won = $derived(!matrix.filter((val) => val.hidden).length)
+let won = $derived(!matrix.filter((val) => val.hidden).length);
 
 const rowLength = 6;
 const numCols = rowLength;
@@ -36,8 +38,8 @@ const createNumbers = () => {
         const col = i - rowLength * row;
         
         if(matrix[i].value === 1) {
-            numbersTop[col] ||= [1];
-            numbersLeft[row] ||= [1];
+            numbersTop[col] ||= [];
+            numbersLeft[row] ||= [];
             
             if(matrix[i - rowLength]?.value >= 1) {
                 numbersTop[col].splice(numbersTop[col].length - 1, 1, numbersTop[col].at(-1)! + 1);
@@ -102,48 +104,55 @@ const [numbersLeft, numbersTop] = createNumbers();
 {/if}
 
 {#if won}
-        <game-over>
+    <game-over>
         <h1>You won!</h1>
         <button onclick={reset}>Again</button>
     </game-over>
 {/if}
 
-<main>
-    <game-view>
-        <numbers-left style="grid-template-rows: repeat({numRows}, 4rem);">
+<main class="flex justify-center flex-col mt-8">
+    <game-view class="relative block m-auto">
+        <numbers-left class="absolute bottom-0 -translate-x-full pr-1 grid grid-cols-1" style="grid-template-rows: repeat({numRows}, 3rem);">
             {#each numbersLeft as row}
-                <div>{row.join(',')}</div>
+                <div class="flex items-center justify-end">{row.join(',')}</div>
             {/each}
         </numbers-left>
         
-        <numbers-top style="grid-template-columns: repeat({numCols}, 4rem);">
+        <numbers-top class="grid grid-rows-1 mx-auto" style="grid-template-columns: repeat({numCols}, 3rem);">
             {#each numbersTop as col}
-                <div>{col.join(',')}</div>
+                <div class="flex justify-center">{col.join(',')}</div>
             {/each}
         </numbers-top>
         
-        <game-matrix style="grid-template-columns: repeat({numCols}, 1fr); grid-template-rows: repeat({numRows}, 1fr);">
+        <game-matrix class="grid h-max mx-auto" style="grid-template-columns: repeat({numCols}, 3rem); grid-template-rows: repeat({numRows}, 3rem);">
             {#each matrix as field, index}
-                <game-field type="button" onclick={() => reveal(field, index)}>
-                    <pre>{index} </pre>
-                    {#if field.hidden}
-                        #
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <game-field role="button" tabindex="0" class="gap-px border border-secondary-300 flex justify-center items-center" type="button" onclick={() => reveal(field, index)}>
+                    {#if !field.hidden}
+                        {#if field.value === 1}
+                            <IconPointFilled class="text-green-700" />
+                        {:else}
+                            <IconX class="text-red-700" />
+                        {/if}
                     {/if}
-                    <!--{#if field.hidden}-->
-                        {field.value}
-                    <!--{/if}-->
                 </game-field>
             {/each}
         </game-matrix>
     </game-view>
 
-    <game-controls>
-        <button onclick={() => btnAction = 0}>0</button>
-        <button onclick={() => btnAction = 1}>1</button>
-
-        <hr />
-        <div>Fails: {fails}</div>
+    <game-controls class="card w-11/12 mx-auto my-8 p-4 flex justify-center gap-1">
+        <button class="btn {btnAction ? 'variant-soft' : 'variant-soft-success'} btn-icon btn-se" onclick={() => btnAction = 0}>
+            <IconX class="text-red-700" />
+        </button>
+        <button class="btn {btnAction ? 'variant-soft-success' : 'variant-soft'} btn-icon" onclick={() => btnAction = 1}>
+            <IconPointFilled class="text-green-700" />
+        </button>
     </game-controls>
+
+    <div class="flex justify-center">
+        Fails:&#10240
+        <span class="{fails >= 1 ? 'text-warning-700' : 'text-primary-700'}">{fails}</span>
+    </div>
 </main>
 
 <style>
@@ -165,53 +174,5 @@ game-over {
     align-items: center;
     position: fixed;
     z-index: 9999;
-}
-main {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 2rem;
-}
-game-view {
-    position: relative;
-    display: block;
-    margin: auto;
-}
-numbers-top {
-    display: grid;
-    grid-template-rows: 1;
-}
-numbers-left {
-    position: absolute;
-    bottom: 0;
-    transform: translateX(-100%);
-    display: inline-grid;
-    grid-template-columns: 1;
-}
-numbers-top div {
-    display: flex;
-    justify-content: center;
-}
-numbers-left div {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-game-matrix {
-    display: grid;
-    width: max-content;
-}
-game-field {
-    border: 1px green solid;
-    height: 4rem;
-    width: 4rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-game-controls {
-    display: block;
-    margin: auto;
-    margin-top: 2rem;
 }
 </style>
