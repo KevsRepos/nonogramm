@@ -1,7 +1,12 @@
-<script>
-let btnAction = $state(1);
+<script lang="ts">
+let btnAction: 1|0 = $state(1);
 
-const matrixShape = [
+interface Field {
+    value: 1|0,
+    hidden: boolean
+}
+
+const matrixShape: Array<1|0> = [
     0, 0, 1, 1, 1, 1,
     0, 1, 1, 0, 0, 1,
     0, 0, 1, 0, 0, 1,
@@ -10,11 +15,11 @@ const matrixShape = [
     1, 0, 1, 0, 1, 0,
 ];
 
-const buildMatrix = (matrixShape) => {
+const buildMatrix = (matrixShape: Array<1|0>): Array<Field> => {
     return matrixShape.map((val) => ({value: val, hidden: true}))
 }
 
-let matrix = $state(buildMatrix(matrixShape));
+let matrix: Array<Field> = $state(buildMatrix(matrixShape));
 let fails = $state(0);
 let won = $derived(!matrix.filter((val) => val.hidden).length)
 
@@ -23,25 +28,25 @@ const numCols = rowLength;
 const numRows = matrixShape.length / rowLength;
 
 const createNumbers = () => {
-    const numbersTop = [];
-    const numbersLeft = [];
+    const numbersTop: Array<Array<number>> = [];
+    const numbersLeft: Array<Array<number>> = [];
     
     for(let i = 0; i < matrix.length; i++) {
         const row = Math.floor(i / numCols);
         const col = i - rowLength * row;
         
         if(matrix[i].value === 1) {
-            numbersTop[col] ||= [];
-            numbersLeft[row] ||= [];
+            numbersTop[col] ||= [1];
+            numbersLeft[row] ||= [1];
             
             if(matrix[i - rowLength]?.value >= 1) {
-                numbersTop[col].splice(numbersTop[col].length - 1, 1, numbersTop[col].at(-1) + 1);
+                numbersTop[col].splice(numbersTop[col].length - 1, 1, numbersTop[col].at(-1)! + 1);
             } else {
                 numbersTop[col].push(1);
             }
 
             if(col > 0 && matrix[i - 1]?.value >= 1) {
-                numbersLeft[row].splice(numbersLeft[row].length - 1, 1, numbersLeft[row].at(-1) + 1);
+                numbersLeft[row].splice(numbersLeft[row].length - 1, 1, numbersLeft[row].at(-1)! + 1);
             } else {
                 numbersLeft[row].push(1);
             }
@@ -52,7 +57,7 @@ const createNumbers = () => {
     return [numbersLeft, numbersTop];
 }
 
-const reveal = (field, index) => {
+const reveal = (field: Field, index: number) => {
     field.hidden = false;
 
     if(btnAction !== field.value) {
@@ -72,7 +77,7 @@ const reveal = (field, index) => {
     checkAndReveal(currentCol);
 }
 
-const checkAndReveal = (fields) => {
+const checkAndReveal = (fields: Array<Field>) => {
     const allRevealed = fields.every((val) => !(val.hidden && val.value === 1));
     
     if(allRevealed) {
