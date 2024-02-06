@@ -23,7 +23,7 @@ const buildMatrix = (matrixShape: Array<1|0>): Array<Field> => {
 
 let seconds = $state(0);
 let minutes = $derived(Math.floor(seconds / 60));
-let time = $derived(`${minutes}:${seconds}`);
+let time = $derived(`${minutes}:${seconds % 60}`);
 
 $effect(() => {
     const interval = setInterval(() => {
