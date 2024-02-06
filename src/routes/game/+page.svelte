@@ -21,6 +21,20 @@ const buildMatrix = (matrixShape: Array<1|0>): Array<Field> => {
     return matrixShape.map((val) => ({value: val, hidden: true}))
 }
 
+let seconds = $state(0);
+let minutes = $derived(Math.floor(seconds / 60));
+let time = $derived(`${minutes}:${seconds}`);
+
+$effect(() => {
+    const interval = setInterval(() => {
+        seconds++;
+    }, 1000);
+
+    return () => {
+        clearInterval(interval);
+    }
+});
+
 let matrix: Array<Field> = $state(buildMatrix(matrixShape));
 let fails = $state(0);
 let won = $derived(!matrix.filter((val) => val.hidden).length);
@@ -152,6 +166,12 @@ const [numbersLeft, numbersTop] = createNumbers();
     <div class="flex justify-center">
         Fails:&#10240
         <span class="{fails >= 1 ? 'text-warning-700' : 'text-primary-700'}">{fails}</span>
+    </div>
+
+    <hr class="!border-dashed my-3" />
+
+    <div class="flex justify-center">
+        {time}
     </div>
 </main>
 
